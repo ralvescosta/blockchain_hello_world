@@ -40,6 +40,7 @@ func (pow *ProofOfWork) NewNonce(nonce int) (error, []byte) {
 		},
 		[]byte{},
 	)
+
 	return nil, data
 }
 
@@ -78,6 +79,20 @@ func (pow *ProofOfWork) Exec() (error, int, []byte) {
 
 	log.Println(fmt.Sprintf("[PoW::Exec] - Finished PoW for the Block: %d", pow.Block.Id))
 	return nil, nonce, hash[:]
+}
+
+func (pow *ProofOfWork) Validate() (error, bool) {
+	var intHash big.Int
+
+	err, data := pow.NewNonce(pow.Block.Nonce)
+	if err != nil {
+		return err, false
+	}
+
+	hash := sha256.Sum256(data)
+	intHash.SetBytes(hash[:])
+
+	return nil, intHash.Cmp(pow.Target) == -1
 }
 
 func NewProofOfWork(b *Block) *ProofOfWork {
