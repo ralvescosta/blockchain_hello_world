@@ -5,10 +5,10 @@ type BlockChain struct {
 }
 
 func (pst *BlockChain) Add(data string) {
-	index := uint64(len(pst.Blocks) - 1)
+	index := len(pst.Blocks) - 1
 	prevBlock := pst.Blocks[index]
 
-	newBlock := NewBlock(data, prevBlock.Hash, index)
+	newBlock := NewBlock(data, prevBlock.Hash, prevBlock.Id+1)
 
 	pst.Blocks = append(pst.Blocks, newBlock)
 }

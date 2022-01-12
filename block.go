@@ -24,13 +24,13 @@ func (pst *Block) DeriveHash() {
 }
 
 func (pst Block) ToString() string {
-	return fmt.Sprintf("[Block] %d\n[Time] %d\n[Hash] %s\n[PrevHash] %s", pst.Id, pst.Timestamp, pst.Hash, pst.PrevHash)
+	return fmt.Sprintf("[Block] %d\n[Time] %d\n[Hash] %x\n[PrevHash] %x\n", pst.Id, pst.Timestamp, pst.Hash, pst.PrevHash)
 }
 
 func NewBlock(data string, prevHash []byte, index uint64) *Block {
 	block := Block{
 		Id:        index,
-		Timestamp: time.Now().Unix(),
+		Timestamp: time.Now().UnixMilli(),
 		Hash:      []byte{},
 		Data:      []byte(data),
 		PrevHash:  prevHash,
