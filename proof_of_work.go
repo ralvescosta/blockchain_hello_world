@@ -18,9 +18,18 @@ type ProofOfWork struct {
 	Target *big.Int
 }
 
-func (pow *ProofOfWork) InitNonce(nonce int) []byte {
-	_, nonceHex := ToHex(int64(nonce))
-	_, difficultyHex := ToHex(int64(Difficulty))
+func (pow *ProofOfWork) NewNonce(nonce int) (error, []byte) {
+	err, nonceHex := ToHex(int64(nonce))
+	if err != nil {
+		log.Println("[Err][PoW::NewNonce] - While hex The Nonce integer", err)
+		return err, nil
+	}
+
+	err, difficultyHex := ToHex(int64(Difficulty))
+	if err != nil {
+		log.Println("[Err][PoW::NewNonce] - While hex the difficulty integer", err)
+		return err, nil
+	}
 
 	data := bytes.Join(
 		[][]byte{
@@ -31,7 +40,7 @@ func (pow *ProofOfWork) InitNonce(nonce int) []byte {
 		},
 		[]byte{},
 	)
-	return data
+	return nil, data
 }
 
 func (pow *ProofOfWork) Exec() (error, int, []byte) {
@@ -43,7 +52,11 @@ func (pow *ProofOfWork) Exec() (error, int, []byte) {
 	nonce := 0
 
 	for nonce < math.MaxInt64 {
-		data := pow.InitNonce(nonce)
+		err, data := pow.NewNonce(nonce)
+		if err != nil {
+			break
+		}
+
 		hash = sha256.Sum256(data)
 
 		log.Println(fmt.Sprintf("[PoW::Exec] - Hash: %x", hash))
@@ -59,6 +72,7 @@ func (pow *ProofOfWork) Exec() (error, int, []byte) {
 	}
 
 	if !resolved {
+		log.Println("[Err][PoW::Exec] - Cant mine this block!")
 		return errors.New("Cant mine this block!"), 0, nil
 	}
 
