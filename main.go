@@ -1,8 +1,6 @@
 package main
 
-import (
-	"fmt"
-)
+import "log"
 
 func main() {
 	chain := NewBlockchain()
@@ -12,6 +10,6 @@ func main() {
 	chain.Add("My Third Block")
 
 	for _, block := range chain.Blocks {
-		fmt.Println(block.ToString())
+		log.Println(block.ToString())
 	}
 }

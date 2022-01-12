@@ -13,6 +13,7 @@ type Block struct {
 	Hash      []byte
 	Data      []byte
 	PrevHash  []byte
+	Nonce     int
 }
 
 func (pst *Block) DeriveHash() {
@@ -27,16 +28,26 @@ func (pst Block) ToString() string {
 	return fmt.Sprintf("[Block] %d\n[Time] %d\n[Hash] %x\n[PrevHash] %x\n", pst.Id, pst.Timestamp, pst.Hash, pst.PrevHash)
 }
 
-func NewBlock(data string, prevHash []byte, index uint64) *Block {
-	block := Block{
+func NewBlock(data string, prevHash []byte, index uint64) (error, *Block) {
+	block := &Block{
 		Id:        index,
 		Timestamp: time.Now().UnixMilli(),
 		Hash:      []byte{},
 		Data:      []byte(data),
 		PrevHash:  prevHash,
+		Nonce:     0,
 	}
 
-	block.DeriveHash()
+	pow := NewProofOfWork(block)
 
-	return &block
+	err, nonce, hash := pow.Exec()
+
+	if err != nil {
+		return err, nil
+	}
+
+	block.Hash = hash
+	block.Nonce = nonce
+
+	return nil, block
 }
