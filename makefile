@@ -1,0 +1,2 @@
+start blockchain:
+	go run .
