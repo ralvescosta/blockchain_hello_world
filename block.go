@@ -25,7 +25,7 @@ func (pst *Block) DeriveHash() {
 }
 
 func (pst Block) ToString() string {
-	return fmt.Sprintf("[Block] %d\n[Time] %d\n[Hash] %x\n[PrevHash] %x\n", pst.Id, pst.Timestamp, pst.Hash, pst.PrevHash)
+	return fmt.Sprintf("\n[Block] %d\n[Timestamp] %d\n[Data] %x\n[Hash] %x\n[PrevHash] %x\n", pst.Id, pst.Timestamp, pst.Data, pst.Hash, pst.PrevHash)
 }
 
 func NewBlock(data string, prevHash []byte, index uint64) (error, *Block) {
