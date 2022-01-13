@@ -26,8 +26,6 @@ func (pst *BlockChain) Add(data string) error {
 
 func NewBlockchain(repo *Repository) (*BlockChain, error) {
 	var lastHash []byte
-	// opts := badger.DefaultOptions(dbPath)
-	// db, err := badger.Open(opts)
 
 	err, firstBlock := NewBlock("Chain Initialized", []byte{}, 0)
 	if err != nil {
