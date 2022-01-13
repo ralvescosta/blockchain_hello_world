@@ -1,1 +1,4 @@
-temp/blocks/*
+tmp/blocks/*.vlog
+tmp/blocks/*.sst
+tmp/blocks/MANIFEST
+tmp/logs/*.json
