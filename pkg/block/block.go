@@ -37,7 +37,7 @@ func (b *Block) Serialize() (error, []byte) {
 }
 
 // Deserialize the saved block
-func Deserialize(data []byte) (error, *Block) {
+func Deserialize(data []byte) (*Block, error) {
 	var block Block
 
 	decoder := gob.NewDecoder(bytes.NewReader(data))
@@ -46,10 +46,10 @@ func Deserialize(data []byte) (error, *Block) {
 
 	if err != nil {
 		log.Println("[Err][Block::Deserialize]", err)
-		return err, nil
+		return nil, err
 	}
 
-	return nil, &block
+	return &block, nil
 }
 
 // Create a new Block

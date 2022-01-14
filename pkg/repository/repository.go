@@ -20,7 +20,7 @@ func (pst Repository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
 		}
 
 		err = item.Value(func(val []byte) error {
-			err, block = pkgBlock.Deserialize(val)
+			block, err = pkgBlock.Deserialize(val)
 			if err != nil {
 				return err
 			}
@@ -68,7 +68,7 @@ func (pst Repository) GetOrCreateFirstBlock(firstBlock *pkgBlock.Block) (*pkgBlo
 		}
 
 		err = item.Value(func(val []byte) error {
-			err, blockToReturn = pkgBlock.Deserialize(val)
+			blockToReturn, err = pkgBlock.Deserialize(val)
 			return err
 		})
 
@@ -104,7 +104,7 @@ func (pst Repository) FindOrCreateBlock(block *pkgBlock.Block) (*pkgBlock.Block,
 		}
 
 		err = item.Value(func(val []byte) error {
-			err, blockToReturn = pkgBlock.Deserialize(val)
+			blockToReturn, err = pkgBlock.Deserialize(val)
 			return err
 		})
 
