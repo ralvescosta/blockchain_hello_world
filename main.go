@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/dgraph-io/badger"
+	"blockchain/cmd"
 )
 
 type CommandLine struct {
@@ -99,17 +99,6 @@ func (cli *CommandLine) run() {
 func main() {
 	defer os.Exit(0)
 
-	opts := badger.DefaultOptions(dbPath)
-	db, err := badger.Open(opts)
-	repository := NewRepository(db)
-	defer repository.Dispose()
-
-	chain, err := NewBlockchain(&repository)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	cli := CommandLine{chain}
-
-	cli.run()
+	cmd := cmd.CliCmd{}
+	cmd.Run()
 }
