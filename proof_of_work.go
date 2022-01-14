@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"log"
 	"math"
 	"math/big"
@@ -45,7 +44,7 @@ func (pow *ProofOfWork) NewNonce(nonce int) (error, []byte) {
 }
 
 func (pow *ProofOfWork) Exec() (error, int, []byte) {
-	log.Println(fmt.Sprintf("[PoW::Exec] - Start PoW for the Block: %d", pow.Block.Id))
+	// log.Println(fmt.Sprintf("[PoW::Exec] - Start PoW for the Block: %d", pow.Block.Id))
 	var intHash big.Int
 	var hash [32]byte
 
@@ -60,7 +59,7 @@ func (pow *ProofOfWork) Exec() (error, int, []byte) {
 
 		hash = sha256.Sum256(data)
 
-		log.Println(fmt.Sprintf("[PoW::Exec] - Hash: %x", hash))
+		// log.Println(fmt.Sprintf("[PoW::Exec] - Hash: %x", hash))
 		intHash.SetBytes(hash[:])
 
 		if intHash.Cmp(pow.Target) == -1 {
@@ -77,7 +76,7 @@ func (pow *ProofOfWork) Exec() (error, int, []byte) {
 		return errors.New("Cant mine this block!"), 0, nil
 	}
 
-	log.Println(fmt.Sprintf("[PoW::Exec] - Finished PoW for the Block: %d", pow.Block.Id))
+	// log.Println(fmt.Sprintf("[PoW::Exec] - Finished PoW for the Block: %d", pow.Block.Id))
 	return nil, nonce, hash[:]
 }
 
