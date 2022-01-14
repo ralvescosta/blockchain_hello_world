@@ -9,8 +9,9 @@
       "program": "${workspaceFolder}",
       "env": {
         "GO_ENV": "development",
+        "DB_PATH": "./tmp/blocks/"
       },
-      "args": ["run", "main.go"]
+      "args": ["run", ".", "add", "-block", "YOUR BLOCK DATA HERE"]
     }
   ]
 }
