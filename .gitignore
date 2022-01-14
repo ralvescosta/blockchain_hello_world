@@ -1,4 +1,5 @@
 tmp/blocks/*.vlog
 tmp/blocks/*.sst
 tmp/blocks/MANIFEST
+tmp/blocks/LOCK
 tmp/logs/*.log
