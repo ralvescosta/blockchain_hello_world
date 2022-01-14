@@ -28,16 +28,17 @@ func (pst *BlockChain) Add(data string) error {
 }
 
 func NewBlockchain(repo *repository.Repository) (*BlockChain, error) {
-	var lastHash []byte
-
 	err, firstBlock := pkgBlock.NewBlock("Chain Initialized", []byte{}, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	repo.GetOrCreateFirstBlock(firstBlock)
+	block, err := repo.GetOrCreateFirstBlock(firstBlock)
+	if err != nil {
+		return nil, err
+	}
 
-	return &BlockChain{lastHash, repo}, nil
+	return &BlockChain{block.Hash, repo}, nil
 }
 
 type BlockChainIterator struct {
