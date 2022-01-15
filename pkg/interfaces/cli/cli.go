@@ -48,14 +48,11 @@ func (pst *CommandLine) printChainCommand() {
 			log.Panic(err)
 		}
 
-		log.Printf("Previous hash: %x\n", block.PrevHash)
-		log.Printf("data: %s\n", block.Data)
-		log.Printf("hash: %x\n", block.Hash)
+		log.Println(block.ToString())
 		pow := pkgBlock.NewProofOfWork(block)
 		_, isValid := pow.Validate()
-		log.Printf("Pow: %s\n", strconv.FormatBool(isValid))
-		log.Println()
-		// This works because the Genesis block has no PrevHash to point to.
+		log.Printf("Is Pow Valid: %s\n", strconv.FormatBool(isValid))
+
 		if len(block.PrevHash) == 0 {
 			break
 		}
