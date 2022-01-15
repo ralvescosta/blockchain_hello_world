@@ -10,29 +10,50 @@ type Repository struct {
 	db *badger.DB
 }
 
-func (pst Repository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
+func (pst Repository) GetLastBlock() (*pkgBlock.Block, error) {
 	var block *pkgBlock.Block
 
 	err := pst.db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get(key)
+		lastHashSaved, err := txn.Get([]byte("lh"))
 		if err != nil {
 			return err
 		}
 
-		err = item.Value(func(val []byte) error {
-			block, err = pkgBlock.Deserialize(val)
+		err = lastHashSaved.Value(func(lastHash []byte) error {
+			lastBlock, err := txn.Get(lastHash)
 			if err != nil {
 				return err
 			}
+			err = lastBlock.Value(func(val []byte) error {
+				block, err = pkgBlock.Deserialize(val)
+				return err
+			})
 
-			return nil
+			return err
 		})
 
 		return err
 	})
-	if err != nil {
-		return nil, err
-	}
+
+	return block, err
+}
+
+func (pst Repository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
+	var block *pkgBlock.Block
+
+	err := pst.db.View(func(txn *badger.Txn) error {
+		blockSalved, err := txn.Get(key)
+		if err != nil {
+			return err
+		}
+
+		err = blockSalved.Value(func(val []byte) error {
+			block, err = pkgBlock.Deserialize(val)
+			return err
+		})
+
+		return err
+	})
 
 	return block, err
 }
