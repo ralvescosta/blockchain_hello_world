@@ -11,12 +11,15 @@ type BlockChain struct {
 }
 
 func (pst *BlockChain) Add(data string) error {
-	block, err := pst.repo.GetBlockByKey([]byte("lh"))
+	block, err := pst.repo.GetLastBlock()
 	if err != nil {
 		return err
 	}
 
 	err, newBlock := pkgBlock.NewBlock(data, block.Hash, 0)
+	if err != nil {
+		return err
+	}
 
 	_, err = pst.repo.UpdateBlock(newBlock)
 	if err != nil {
@@ -28,7 +31,7 @@ func (pst *BlockChain) Add(data string) error {
 }
 
 func NewBlockchain(repo *repository.Repository) (*BlockChain, error) {
-	err, firstBlock := pkgBlock.NewBlock("Chain Initialized", []byte{}, 0)
+	err, firstBlock := pkgBlock.NewBlock("First", []byte{}, 0)
 	if err != nil {
 		return nil, err
 	}
