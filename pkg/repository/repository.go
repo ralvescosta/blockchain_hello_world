@@ -67,7 +67,7 @@ func (pst Repository) Dispose() {
 }
 
 func (pst Repository) txnCreateNewBlock(block *pkgBlock.Block) error {
-	err, serialized := block.Serialize()
+	serialized, err := block.Serialize()
 	if err != nil {
 		return err
 	}

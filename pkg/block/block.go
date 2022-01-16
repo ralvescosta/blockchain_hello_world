@@ -17,12 +17,16 @@ type Block struct {
 	Nonce     int
 }
 
+func (pst Block) NextId() uint64 {
+	return pst.Id + 1
+}
+
 func (pst Block) ToString() string {
 	return fmt.Sprintf("\n[Block] %d\n[Timestamp] %d\n[Data] %x\n[Hash] %x\n[PrevHash] %x\n", pst.Id, pst.Timestamp, pst.Data, pst.Hash, pst.PrevHash)
 }
 
 // Converte the entire block to byte, to make it possible to save
-func (b *Block) Serialize() (error, []byte) {
+func (b *Block) Serialize() ([]byte, error) {
 	var res bytes.Buffer
 	encoder := gob.NewEncoder(&res)
 
@@ -30,10 +34,10 @@ func (b *Block) Serialize() (error, []byte) {
 
 	if err != nil {
 		log.Println("[Err][Block::Serialize]", err)
-		return err, nil
+		return nil, err
 	}
 
-	return nil, res.Bytes()
+	return res.Bytes(), nil
 }
 
 // Deserialize the saved block
@@ -53,7 +57,7 @@ func Deserialize(data []byte) (*Block, error) {
 }
 
 // Create a new Block
-func NewBlock(data string, prevHash []byte, index uint64) (error, *Block) {
+func NewBlock(data string, prevHash []byte, index uint64) (*Block, error) {
 	block := &Block{
 		Id:        index,
 		Timestamp: time.Now().UnixMilli(),
@@ -68,11 +72,11 @@ func NewBlock(data string, prevHash []byte, index uint64) (error, *Block) {
 	err, nonce, hash := pow.Exec()
 
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
 	block.Hash = hash
 	block.Nonce = nonce
 
-	return nil, block
+	return block, nil
 }

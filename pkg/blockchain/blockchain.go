@@ -16,7 +16,7 @@ func (pst *BlockChain) Add(data string) error {
 		return err
 	}
 
-	err, newBlock := pkgBlock.NewBlock(data, block.Hash, 0)
+	newBlock, err := pkgBlock.NewBlock(data, block.Hash, block.NextId())
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func (pst *BlockChain) Add(data string) error {
 }
 
 func NewBlockchain(repo *repository.Repository) (*BlockChain, error) {
-	err, firstBlock := pkgBlock.NewBlock("First", []byte{}, 0)
+	firstBlock, err := pkgBlock.NewBlock("First", []byte{}, 0)
 	if err != nil {
 		return nil, err
 	}
