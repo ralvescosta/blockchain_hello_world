@@ -1,10 +1,11 @@
 package repositories
 
 import (
-	pkgBlock "blockchain/pkg/block"
 	"encoding/json"
 	"fmt"
 	"time"
+
+	pkgBlock "blockchain/pkg/block"
 )
 
 type BlockModel struct {
@@ -38,7 +39,7 @@ func BlockToModel(block *pkgBlock.Block) (BlockModel, error) {
 		Timestamp: block.Timestamp,
 		Data:      string(block.Data),
 		Hash:      fmt.Sprintf("%x", block.Hash),
-		PrevHash:  fmt.Sprintf("%x", block.PrevHash),
+		PrevHash:  string(block.PrevHash),
 		Nonce:     block.Nonce,
 		CreatedAt: time.Unix(0, block.Timestamp*1000000).String(),
 	}, nil
