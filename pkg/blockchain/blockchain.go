@@ -21,7 +21,7 @@ func (pst *BlockChain) Add(data string) error {
 		return err
 	}
 
-	_, err = pst.repo.UpdateBlock(newBlock)
+	_, err = pst.repo.InsertNewBlock(newBlock)
 	if err != nil {
 		return err
 	}

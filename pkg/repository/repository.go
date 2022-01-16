@@ -24,12 +24,15 @@ func (pst Repository) GetLastBlock() (*pkgBlock.Block, error) {
 }
 
 func (pst Repository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
-	lastBlockSerialized, err := pst.db.Get(context.Background(), string(key)).Result()
+	blockSerialized, err := pst.db.Get(context.Background(), string(key)).Result()
 	if shouldReturnRedisError(err) {
 		return nil, err
 	}
+	if err.Error() == redis.Nil.Error() && blockSerialized == "" {
+		return nil, nil
+	}
 
-	block, err := pkgBlock.Deserialize([]byte(lastBlockSerialized))
+	block, err := pkgBlock.Deserialize([]byte(blockSerialized))
 
 	return block, err
 }
@@ -53,27 +56,7 @@ func (pst Repository) GetOrCreateFirstBlock(firstBlock *pkgBlock.Block) (*pkgBlo
 	return firstBlock, err
 }
 
-func (pst Repository) FindOrCreateBlock(block *pkgBlock.Block) (*pkgBlock.Block, error) {
-	blockSerialized, err := pst.db.Get(context.Background(), string(block.Hash)).Result()
-	if shouldReturnRedisError(err) {
-		return nil, err
-	}
-
-	if blockSerialized != "" {
-		block, err := pkgBlock.Deserialize([]byte(blockSerialized))
-
-		return block, err
-	}
-
-	err = pst.txnCreateNewBlock(block)
-	if err != nil {
-		return nil, err
-	}
-
-	return block, err
-}
-
-func (pst Repository) UpdateBlock(block *pkgBlock.Block) (*pkgBlock.Block, error) {
+func (pst Repository) InsertNewBlock(block *pkgBlock.Block) (*pkgBlock.Block, error) {
 	err := pst.txnCreateNewBlock(block)
 
 	return block, err
