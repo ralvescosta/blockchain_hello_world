@@ -23,7 +23,7 @@
         "GO_ENV": "development",
         "DB_PATH": "./tmp/blocks/"
       },
-      "args": ["run", ".", "prints"]
+      "args": ["run", ".", "print"]
     }
   ]
 }

@@ -2,9 +2,8 @@ package cmd
 
 import (
 	"log"
-	"os"
 
-	"github.com/dgraph-io/badger"
+	"github.com/go-redis/redis/v8"
 
 	"blockchain/pkg/blockchain"
 	"blockchain/pkg/interfaces/cli"
@@ -12,7 +11,7 @@ import (
 )
 
 type CliContainer struct {
-	dbConnection *badger.DB
+	dbConnection *redis.Client
 	repository   *repository.Repository
 	chain        *blockchain.BlockChain
 	cli          *cli.CommandLine
@@ -24,11 +23,11 @@ func (pst CliContainer) Close() {
 
 func NewCliContainer() CliContainer {
 
-	opts := badger.DefaultOptions(os.Getenv("DB_PATH"))
-	dbConnection, err := badger.Open(opts)
-	if err != nil {
-		log.Panic(err)
-	}
+	dbConnection := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
 	repository := repository.NewRepository(dbConnection)
 
 	chain, err := blockchain.NewBlockchain(repository)

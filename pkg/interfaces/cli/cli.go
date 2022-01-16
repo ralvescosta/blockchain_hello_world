@@ -53,9 +53,9 @@ func (pst *CommandLine) printChainCommand() {
 		_, isValid := pow.Validate()
 		log.Printf("Is Pow Valid: %s\n", strconv.FormatBool(isValid))
 
-		if len(block.PrevHash) == 0 {
-			break
-		}
+		// if len(block.PrevHash) == 0 {
+		// 	break
+		// }
 	}
 }
 
