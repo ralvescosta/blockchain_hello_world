@@ -2,12 +2,12 @@ package blockchain
 
 import (
 	pkgBlock "blockchain/pkg/block"
-	"blockchain/pkg/repository"
+	"blockchain/pkg/repositories"
 )
 
 type BlockChain struct {
 	LastHash []byte
-	repo     *repository.Repository
+	repo     *repositories.Repository
 }
 
 func (pst *BlockChain) Add(data string) error {
@@ -30,7 +30,7 @@ func (pst *BlockChain) Add(data string) error {
 	return err
 }
 
-func NewBlockchain(repo *repository.Repository) (*BlockChain, error) {
+func NewBlockchain(repo *repositories.Repository) (*BlockChain, error) {
 	firstBlock, err := pkgBlock.NewBlock("First", []byte{}, 0)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func NewBlockchain(repo *repository.Repository) (*BlockChain, error) {
 
 type BlockChainIterator struct {
 	CurrentHash []byte
-	repo        *repository.Repository
+	repo        *repositories.Repository
 }
 
 func (pst *BlockChain) Iterator() *BlockChainIterator {

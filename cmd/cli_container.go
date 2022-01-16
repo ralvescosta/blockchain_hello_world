@@ -7,12 +7,12 @@ import (
 
 	"blockchain/pkg/blockchain"
 	"blockchain/pkg/interfaces/cli"
-	"blockchain/pkg/repository"
+	"blockchain/pkg/repositories"
 )
 
 type CliContainer struct {
 	dbConnection *redis.Client
-	repository   *repository.Repository
+	repository   *repositories.Repository
 	chain        *blockchain.BlockChain
 	cli          *cli.CommandLine
 }
@@ -28,7 +28,7 @@ func NewCliContainer() CliContainer {
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
-	repository := repository.NewRepository(dbConnection)
+	repository := repositories.NewRepository(dbConnection)
 
 	chain, err := blockchain.NewBlockchain(repository)
 	if err != nil {

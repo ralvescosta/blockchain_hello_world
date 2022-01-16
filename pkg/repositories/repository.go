@@ -1,7 +1,9 @@
-package repository
+package repositories
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/go-redis/redis/v8"
 
@@ -13,39 +15,46 @@ type Repository struct {
 }
 
 func (pst Repository) GetLastBlock() (*pkgBlock.Block, error) {
-	lastBlockSerialized, err := pst.db.Get(context.Background(), "last_block").Result()
+	s, err := pst.db.Get(context.Background(), "last_block").Bytes()
 	if shouldReturnRedisError(err) {
 		return nil, err
 	}
 
-	block, err := pkgBlock.Deserialize([]byte(lastBlockSerialized))
-
-	return block, err
-}
-
-func (pst Repository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
-	blockSerialized, err := pst.db.Get(context.Background(), string(key)).Bytes()
-	if shouldReturnRedisError(err) {
-		return nil, err
-	}
-	if err != nil && err.Error() == redis.Nil.Error() && len(blockSerialized) == 0 {
+	if err != nil && err.Error() == redis.Nil.Error() && s == nil {
 		return nil, nil
 	}
 
-	block, err := pkgBlock.Deserialize(blockSerialized)
+	var model *BlockModel
+	json.Unmarshal(s, &model)
 
-	return block, err
+	return model.ToBlock(), nil
+}
+
+func (pst Repository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
+	s, err := pst.db.Get(context.Background(), fmt.Sprintf("%x", key)).Bytes()
+	if shouldReturnRedisError(err) {
+		return nil, err
+	}
+	if err != nil && err.Error() == redis.Nil.Error() && s == nil {
+		return nil, nil
+	}
+
+	var model *BlockModel
+	json.Unmarshal(s, &model)
+
+	return model.ToBlock(), nil
 }
 
 func (pst Repository) GetOrCreateFirstBlock(firstBlock *pkgBlock.Block) (*pkgBlock.Block, error) {
-	lastBlockSerialized, err := pst.db.Get(context.Background(), "last_block").Bytes()
+	s, err := pst.db.Get(context.Background(), "last_block").Bytes()
 	if shouldReturnRedisError(err) {
 		return nil, err
 	}
 
-	if len(lastBlockSerialized) > 0 {
-		block, err := pkgBlock.Deserialize(lastBlockSerialized)
-		return block, err
+	var lastModel *BlockModel
+	json.Unmarshal(s, &lastModel)
+	if lastModel != nil {
+		return lastModel.ToBlock(), nil
 	}
 
 	err = pst.txnCreateNewBlock(firstBlock)
@@ -67,18 +76,19 @@ func (pst Repository) Dispose() {
 }
 
 func (pst Repository) txnCreateNewBlock(block *pkgBlock.Block) error {
-	serialized, err := block.Serialize()
+	model, err := BlockToModel(block)
 	if err != nil {
 		return err
 	}
+
 	ctx := context.Background()
 	err = pst.db.Watch(ctx, func(tx *redis.Tx) error {
 		_, err := tx.Pipelined(ctx, func(pipe redis.Pipeliner) error {
-			err = pipe.Set(ctx, string(block.Hash), serialized, 0).Err()
+			err = pipe.Set(ctx, fmt.Sprintf("%x", block.Hash), model, 0).Err()
 			if err != nil {
 				return err
 			}
-			err = pipe.Set(ctx, "last_block", serialized, 0).Err()
+			err = pipe.Set(ctx, "last_block", model, 0).Err()
 			return err
 		})
 		return err
