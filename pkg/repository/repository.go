@@ -1,155 +1,80 @@
 package repository
 
 import (
-	"github.com/dgraph-io/badger"
+	"context"
+
+	"github.com/go-redis/redis/v8"
 
 	pkgBlock "blockchain/pkg/block"
 )
 
 type Repository struct {
-	db *badger.DB
+	db *redis.Client
 }
 
 func (pst Repository) GetLastBlock() (*pkgBlock.Block, error) {
-	var block *pkgBlock.Block
+	lastBlockSerialized, err := pst.db.Get(context.Background(), "last_block").Result()
+	if shouldReturnRedisError(err) {
+		return nil, err
+	}
 
-	err := pst.db.View(func(txn *badger.Txn) error {
-		lastHashSaved, err := txn.Get([]byte("lh"))
-		if err != nil {
-			return err
-		}
-
-		err = lastHashSaved.Value(func(lastHash []byte) error {
-			lastBlock, err := txn.Get(lastHash)
-			if err != nil {
-				return err
-			}
-			err = lastBlock.Value(func(val []byte) error {
-				block, err = pkgBlock.Deserialize(val)
-				return err
-			})
-
-			return err
-		})
-
-		return err
-	})
+	block, err := pkgBlock.Deserialize([]byte(lastBlockSerialized))
 
 	return block, err
 }
 
 func (pst Repository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
-	var block *pkgBlock.Block
+	lastBlockSerialized, err := pst.db.Get(context.Background(), string(key)).Result()
+	if shouldReturnRedisError(err) {
+		return nil, err
+	}
 
-	err := pst.db.View(func(txn *badger.Txn) error {
-		blockSalved, err := txn.Get(key)
-		if err != nil {
-			return err
-		}
-
-		err = blockSalved.Value(func(val []byte) error {
-			block, err = pkgBlock.Deserialize(val)
-			return err
-		})
-
-		return err
-	})
+	block, err := pkgBlock.Deserialize([]byte(lastBlockSerialized))
 
 	return block, err
 }
 
 func (pst Repository) GetOrCreateFirstBlock(firstBlock *pkgBlock.Block) (*pkgBlock.Block, error) {
-	var blockToReturn *pkgBlock.Block
+	lastBlockSerialized, err := pst.db.Get(context.Background(), "last_block").Result()
+	if shouldReturnRedisError(err) {
+		return nil, err
+	}
 
-	err := pst.db.Update(func(txn *badger.Txn) error {
-		item, err := txn.Get(firstBlock.Hash)
-		if err != nil && err != badger.ErrKeyNotFound {
-			return err
-		}
+	if lastBlockSerialized != "" {
+		block, err := pkgBlock.Deserialize([]byte(lastBlockSerialized))
+		return block, err
+	}
 
-		if err == badger.ErrKeyNotFound {
-			err, serialized := firstBlock.Serialize()
-			if err != nil {
-				return err
-			}
+	err = pst.txnCreateNewBlock(firstBlock)
+	if err != nil {
+		return nil, err
+	}
 
-			err = txn.Set(firstBlock.Hash, serialized)
-			if err != nil {
-				return err
-			}
-
-			err = txn.Set([]byte("lh"), firstBlock.Hash)
-			if err != nil {
-				return err
-			}
-
-			blockToReturn = firstBlock
-
-			return err
-		}
-
-		err = item.Value(func(val []byte) error {
-			blockToReturn, err = pkgBlock.Deserialize(val)
-			return err
-		})
-
-		return err
-	})
-
-	return blockToReturn, err
+	return firstBlock, err
 }
 
 func (pst Repository) FindOrCreateBlock(block *pkgBlock.Block) (*pkgBlock.Block, error) {
-	var blockToReturn *pkgBlock.Block
+	blockSerialized, err := pst.db.Get(context.Background(), string(block.Hash)).Result()
+	if shouldReturnRedisError(err) {
+		return nil, err
+	}
 
-	err := pst.db.Update(func(txn *badger.Txn) error {
-		item, err := txn.Get(block.Hash)
-		if err != nil && err != badger.ErrKeyNotFound {
-			return err
-		}
+	if blockSerialized != "" {
+		block, err := pkgBlock.Deserialize([]byte(blockSerialized))
 
-		if err == badger.ErrKeyNotFound {
-			err, serialized := block.Serialize()
-			if err != nil {
-				return err
-			}
+		return block, err
+	}
 
-			err = txn.Set(block.Hash, serialized)
-			if err != nil {
-				return err
-			}
+	err = pst.txnCreateNewBlock(block)
+	if err != nil {
+		return nil, err
+	}
 
-			blockToReturn = block
-
-			return err
-		}
-
-		err = item.Value(func(val []byte) error {
-			blockToReturn, err = pkgBlock.Deserialize(val)
-			return err
-		})
-
-		return err
-	})
-
-	return blockToReturn, err
+	return block, err
 }
 
 func (pst Repository) UpdateBlock(block *pkgBlock.Block) (*pkgBlock.Block, error) {
-	err := pst.db.Update(func(transaction *badger.Txn) error {
-		err, serialized := block.Serialize()
-		if err != nil {
-			return err
-		}
-
-		err = transaction.Set(block.Hash, serialized)
-		if err != nil {
-			return err
-		}
-
-		err = transaction.Set([]byte("lh"), block.Hash)
-		return err
-	})
+	err := pst.txnCreateNewBlock(block)
 
 	return block, err
 }
@@ -158,6 +83,34 @@ func (pst Repository) Dispose() {
 	defer pst.db.Close()
 }
 
-func NewRepository(db *badger.DB) *Repository {
+func (pst Repository) txnCreateNewBlock(block *pkgBlock.Block) error {
+	err, serialized := block.Serialize()
+	if err != nil {
+		return err
+	}
+	ctx := context.Background()
+	err = pst.db.Watch(ctx, func(tx *redis.Tx) error {
+		_, err := tx.Pipelined(ctx, func(pipe redis.Pipeliner) error {
+			err = pipe.Set(ctx, string(block.Hash), string(serialized), 0).Err()
+			if err != nil {
+				return err
+			}
+			err = pipe.Set(ctx, "last_block", string(serialized), 0).Err()
+			return err
+		})
+		return err
+	})
+
+	return err
+}
+
+func NewRepository(db *redis.Client) *Repository {
 	return &Repository{db}
+}
+
+func shouldReturnRedisError(err error) bool {
+	if err != nil && err.Error() != redis.Nil.Error() {
+		return true
+	}
+	return false
 }
