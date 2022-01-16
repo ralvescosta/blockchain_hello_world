@@ -24,27 +24,27 @@ func (pst Repository) GetLastBlock() (*pkgBlock.Block, error) {
 }
 
 func (pst Repository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
-	blockSerialized, err := pst.db.Get(context.Background(), string(key)).Result()
+	blockSerialized, err := pst.db.Get(context.Background(), string(key)).Bytes()
 	if shouldReturnRedisError(err) {
 		return nil, err
 	}
-	if err.Error() == redis.Nil.Error() && blockSerialized == "" {
+	if err.Error() == redis.Nil.Error() && len(blockSerialized) == 0 {
 		return nil, nil
 	}
 
-	block, err := pkgBlock.Deserialize([]byte(blockSerialized))
+	block, err := pkgBlock.Deserialize(blockSerialized)
 
 	return block, err
 }
 
 func (pst Repository) GetOrCreateFirstBlock(firstBlock *pkgBlock.Block) (*pkgBlock.Block, error) {
-	lastBlockSerialized, err := pst.db.Get(context.Background(), "last_block").Result()
+	lastBlockSerialized, err := pst.db.Get(context.Background(), "last_block").Bytes()
 	if shouldReturnRedisError(err) {
 		return nil, err
 	}
 
-	if lastBlockSerialized != "" {
-		block, err := pkgBlock.Deserialize([]byte(lastBlockSerialized))
+	if len(lastBlockSerialized) > 0 {
+		block, err := pkgBlock.Deserialize(lastBlockSerialized)
 		return block, err
 	}
 
@@ -74,11 +74,11 @@ func (pst Repository) txnCreateNewBlock(block *pkgBlock.Block) error {
 	ctx := context.Background()
 	err = pst.db.Watch(ctx, func(tx *redis.Tx) error {
 		_, err := tx.Pipelined(ctx, func(pipe redis.Pipeliner) error {
-			err = pipe.Set(ctx, string(block.Hash), string(serialized), 0).Err()
+			err = pipe.Set(ctx, string(block.Hash), serialized, 0).Err()
 			if err != nil {
 				return err
 			}
-			err = pipe.Set(ctx, "last_block", string(serialized), 0).Err()
+			err = pipe.Set(ctx, "last_block", serialized, 0).Err()
 			return err
 		})
 		return err
