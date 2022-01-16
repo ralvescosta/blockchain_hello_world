@@ -28,7 +28,7 @@ func (pst Repository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
 	if shouldReturnRedisError(err) {
 		return nil, err
 	}
-	if err.Error() == redis.Nil.Error() && len(blockSerialized) == 0 {
+	if err != nil && err.Error() == redis.Nil.Error() && len(blockSerialized) == 0 {
 		return nil, nil
 	}
 

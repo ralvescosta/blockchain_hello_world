@@ -50,7 +50,7 @@ func (pst *CommandLine) printChainCommand() {
 
 		log.Println(block.ToString())
 		pow := pkgBlock.NewProofOfWork(block)
-		_, isValid := pow.Validate()
+		isValid, _ := pow.Validate()
 		log.Printf("Is Pow Valid: %s\n", strconv.FormatBool(isValid))
 
 		// if len(block.PrevHash) == 0 {

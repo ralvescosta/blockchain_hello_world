@@ -68,8 +68,7 @@ func NewBlock(data string, prevHash []byte, index uint64) (*Block, error) {
 	}
 
 	pow := NewProofOfWork(block)
-
-	err, nonce, hash := pow.Exec()
+	nonce, hash, err := pow.Exec()
 
 	if err != nil {
 		return nil, err
