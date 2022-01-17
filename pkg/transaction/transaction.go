@@ -1,4 +1,4 @@
-package blockchain
+package transaction
 
 import (
 	"bytes"
@@ -23,7 +23,7 @@ type TxInput struct {
 type Transaction struct {
 	ID      []byte
 	Inputs  []TxInput  // receiver
-	Outputs []TxOutput // cripto owner
+	Outputs []TxOutput // crypto owner
 }
 
 func (tx *Transaction) SetID() error {
