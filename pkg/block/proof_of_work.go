@@ -34,7 +34,7 @@ func (pow *ProofOfWork) NewNonce(nonce int) ([]byte, error) {
 	data := bytes.Join(
 		[][]byte{
 			pow.Block.PrevHash,
-			pow.Block.Data,
+			pow.Block.HashTransactions(),
 			[]byte(fmt.Sprintf("%d", pow.Block.Timestamp)),
 			nonceHex,
 			difficultyHex,
