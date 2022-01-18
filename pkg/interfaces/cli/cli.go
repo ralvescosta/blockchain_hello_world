@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"runtime"
@@ -8,17 +9,22 @@ import (
 
 	pkgBlock "blockchain/pkg/block"
 	"blockchain/pkg/blockchain"
+	"blockchain/pkg/repositories"
+	txn "blockchain/pkg/transaction"
 )
 
 type CommandLine struct {
 	blockchain *blockchain.BlockChain
+	repository *repositories.Repository
 }
 
 //printUsage will display what options are availble to the user
 func (cli *CommandLine) printUsageCommand() {
 	log.Println("Usage: ")
-	log.Println(" add -block <BLOCK_DATA> - add a block to the chain")
-	log.Println(" print - prints the blocks in the chain")
+	log.Println(" [x] getbalance -address <ADDRESS> -> get balance for ADDRESS")
+	log.Println(" [x] createblockchain -address <ADDRESS> -> creates a blockchain and rewards the mining fee")
+	log.Println(" [x] printchain -> Prints the blocks in the chain")
+	log.Println(" [x] send -from <FROM> -to <TO> -amount <AMOUNT> -> Send amount of coins from one address to another")
 }
 
 //validateArgs ensures the cli was given valid input
@@ -29,13 +35,54 @@ func (cli *CommandLine) validateArgs() {
 	}
 }
 
-//addBlock allows users to add blocks to the chain via the cli
-func (pst *CommandLine) addBlockCommand(data string) {
-	err := pst.blockchain.Add(data)
+func (pst *CommandLine) createBlockChainCommand(address string) {
+	chain, err := blockchain.NewBlockchain(address, pst.repository)
+	defer pst.repository.Dispose()
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
-	log.Println("Added Block!")
+	if chain.Status.Already {
+		log.Println("blockchain already created")
+		return
+	}
+	log.Println("Finished creating chain")
+}
+
+func (pst *CommandLine) getBalanceCommand(address string) {
+	chain, err := blockchain.NewBlockchain(address, pst.repository)
+	defer pst.repository.Dispose()
+	if err != nil {
+		log.Fatal(err)
+	}
+	balance := 0
+	unspentTrancationOutputs := chain.FindUnspentTrancationOutputs(address)
+
+	for _, out := range unspentTrancationOutputs {
+		balance += out.Value
+	}
+
+	fmt.Printf("Balance of %s: %d\n", address, balance)
+}
+
+func (pst *CommandLine) sendCommand(from, to string, amount int) {
+	chain, err := blockchain.NewBlockchain(from, pst.repository)
+	defer pst.repository.Dispose()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	acc, validOutputs := chain.FindSpendableTransactionOutputs(from, amount)
+	tx, err := txn.NewTransaction(from, to, amount, acc, validOutputs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = chain.Add([]*txn.Transaction{tx})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Success!")
 }
 
 //printChain will display the entire contents of the blockchain
@@ -61,15 +108,14 @@ func (pst *CommandLine) printChainCommand() {
 
 func (pst *CommandLine) stateMachine(args []string) {
 	switch args[3] {
-	case "add":
-		addBlockData := args[5]
-		if addBlockData == "" {
-			pst.printUsageCommand()
-			runtime.Goexit()
-		}
-		pst.addBlockCommand(addBlockData)
-	case "print":
-		pst.printChainCommand()
+	case "getbalance":
+		log.Println("getbalance")
+	case "createblockchain":
+		log.Println("createblockchain")
+	case "printchain":
+		log.Println("printchain")
+	case "send":
+		log.Println("send")
 	default:
 		pst.printUsageCommand()
 	}
@@ -80,6 +126,6 @@ func (pst *CommandLine) Run() {
 	pst.stateMachine(os.Args)
 }
 
-func NewCommandLine(blockchain *blockchain.BlockChain) *CommandLine {
-	return &CommandLine{blockchain}
+func NewCommandLine(blockchain *blockchain.BlockChain, repo *repositories.Repository) *CommandLine {
+	return &CommandLine{blockchain, repo}
 }
