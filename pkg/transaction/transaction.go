@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
+	"encoding/hex"
+	"errors"
 	"fmt"
 )
 
@@ -66,4 +68,35 @@ func CoinbaseTxn(toAddress, data string) *Transaction {
 	tx := Transaction{nil, []TxInput{txIn}, []TxOutput{txOut}}
 
 	return &tx
+}
+
+func NewTransaction(from, to string, amount, acc int, validOutputs map[string][]int) (*Transaction, error) {
+	var inputs []TxInput
+	var outputs []TxOutput
+
+	if acc < amount {
+		return nil, errors.New("error: Not enough funds")
+	}
+
+	for txid, outs := range validOutputs {
+		txID, err := hex.DecodeString(txid)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, out := range outs {
+			input := TxInput{txID, out, from}
+			inputs = append(inputs, input)
+		}
+	}
+
+	outputs = append(outputs, TxOutput{amount, to})
+	if acc > amount {
+		outputs = append(outputs, TxOutput{acc - amount, from})
+	}
+
+	tx := Transaction{nil, inputs, outputs}
+	tx.SetID()
+
+	return &tx, nil
 }
