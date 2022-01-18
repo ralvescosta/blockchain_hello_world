@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/go-redis/redis/v8"
 
-	"blockchain/pkg/blockchain"
 	"blockchain/pkg/interfaces/cli"
 	"blockchain/pkg/repositories"
 )
@@ -13,7 +10,6 @@ import (
 type CliContainer struct {
 	dbConnection *redis.Client
 	repository   *repositories.Repository
-	chain        *blockchain.BlockChain
 	cli          *cli.CommandLine
 }
 
@@ -30,17 +26,11 @@ func NewCliContainer() CliContainer {
 	})
 	repository := repositories.NewRepository(dbConnection)
 
-	chain, err := blockchain.NewBlockchain(repository)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	cli := cli.NewCommandLine(chain)
+	cli := cli.NewCommandLine(repository)
 
 	return CliContainer{
 		dbConnection,
 		repository,
-		chain,
 		cli,
 	}
 }

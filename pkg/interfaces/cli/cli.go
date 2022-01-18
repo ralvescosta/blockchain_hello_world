@@ -14,7 +14,6 @@ import (
 )
 
 type CommandLine struct {
-	blockchain *blockchain.BlockChain
 	repository *repositories.Repository
 }
 
@@ -87,7 +86,13 @@ func (pst *CommandLine) sendCommand(from, to string, amount int) {
 
 //printChain will display the entire contents of the blockchain
 func (pst *CommandLine) printChainCommand() {
-	iterator := pst.blockchain.Iterator()
+	chain, err := blockchain.NewBlockchain("", pst.repository)
+	defer pst.repository.Dispose()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	iterator := chain.Iterator()
 
 	for {
 		block, err := iterator.Next()
@@ -126,6 +131,6 @@ func (pst *CommandLine) Run() {
 	pst.stateMachine(os.Args)
 }
 
-func NewCommandLine(blockchain *blockchain.BlockChain, repo *repositories.Repository) *CommandLine {
-	return &CommandLine{blockchain, repo}
+func NewCommandLine(repo *repositories.Repository) *CommandLine {
+	return &CommandLine{repo}
 }
