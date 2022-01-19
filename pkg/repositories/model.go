@@ -9,31 +9,35 @@ import (
 	txn "blockchain/pkg/transaction"
 )
 
-type TransactionModel struct{}
-
-func (pst TransactionModel) ToTransactions() []*txn.Transaction {
-	return []*txn.Transaction{}
-}
-
-func ToTransactinsModel(txs []*txn.Transaction) TransactionModel {
-	return TransactionModel{}
-}
-
 type BlockModel struct {
-	Id           int64            `json:"id"`
-	Timestamp    int64            `json:"timestamp"`
-	Transactions TransactionModel `json:"transactions"`
-	Hash         string           `json:"hash"`
-	PrevHash     string           `json:"prev_hash"`
-	Nonce        int              `json:"nonce"`
-	CreatedAt    string           `json:"created_at"`
+	Id           int64              `json:"id"`
+	Timestamp    int64              `json:"timestamp"`
+	Transactions []TransactionModel `json:"transactions"`
+	Hash         string             `json:"hash"`
+	PrevHash     string             `json:"prev_hash"`
+	Nonce        int                `json:"nonce"`
+	CreatedAt    string             `json:"created_at"`
+}
+type TxOutputModel struct {
+	Value  int    `json:"value"`
+	PubKey string `json:"pub_key"`
+}
+type TxInputModel struct {
+	ID  []byte `json:"id"`
+	Out int    `json:"out"`
+	Sig string `json:"sig"`
+}
+type TransactionModel struct {
+	ID      []byte          `json:"id"`
+	Inputs  []TxInputModel  `json:"inputs"`
+	Outputs []TxOutputModel `json:"outputs"`
 }
 
 func (pst BlockModel) ToBlock() *pkgBlock.Block {
 	return &pkgBlock.Block{
 		Id:           pst.Id,
 		Timestamp:    pst.Timestamp,
-		Transactions: pst.Transactions.ToTransactions(),
+		Transactions: ToTransactions(pst.Transactions),
 		Hash:         []byte(pst.Hash),
 		PrevHash:     []byte(pst.PrevHash),
 		Nonce:        pst.Nonce,
@@ -54,4 +58,70 @@ func BlockToModel(block *pkgBlock.Block) (BlockModel, error) {
 		Nonce:        block.Nonce,
 		CreatedAt:    time.Unix(0, block.Timestamp*1000000).String(),
 	}, nil
+}
+
+func ToTransactions(transactionsModel []TransactionModel) []*txn.Transaction {
+	var txnTransactions []*txn.Transaction
+	var txnInputs []txn.TxInput
+	var txnOutputs []txn.TxOutput
+	for _, transaction := range transactionsModel {
+		for _, input := range transaction.Inputs {
+			txnInputs = append(txnInputs, txn.TxInput{
+				ID:  input.ID,
+				Out: input.Out,
+				Sig: input.Sig,
+			})
+		}
+
+		for _, output := range transaction.Outputs {
+			txnOutputs = append(txnOutputs, txn.TxOutput{
+				Value:  output.Value,
+				PubKey: output.PubKey,
+			})
+		}
+
+		txnTransactions = append(txnTransactions, &txn.Transaction{
+			ID:      transaction.ID,
+			Inputs:  txnInputs,
+			Outputs: txnOutputs,
+		})
+
+		txnInputs = []txn.TxInput{}
+		txnOutputs = []txn.TxOutput{}
+	}
+
+	return txnTransactions
+}
+
+func ToTransactinsModel(txs []*txn.Transaction) []TransactionModel {
+	var transactionsModel []TransactionModel
+	var inputsModel []TxInputModel
+	var outputsModel []TxOutputModel
+	for _, transaction := range transactionsModel {
+		for _, input := range transaction.Inputs {
+			inputsModel = append(inputsModel, TxInputModel{
+				ID:  input.ID,
+				Out: input.Out,
+				Sig: input.Sig,
+			})
+		}
+
+		for _, output := range transaction.Outputs {
+			outputsModel = append(outputsModel, TxOutputModel{
+				Value:  output.Value,
+				PubKey: output.PubKey,
+			})
+		}
+
+		transactionsModel = append(transactionsModel, TransactionModel{
+			ID:      transaction.ID,
+			Inputs:  inputsModel,
+			Outputs: outputsModel,
+		})
+
+		inputsModel = []TxInputModel{}
+		outputsModel = []TxOutputModel{}
+	}
+
+	return transactionsModel
 }
