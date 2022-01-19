@@ -31,7 +31,7 @@ func (pst Repository) GetLastBlock() (*pkgBlock.Block, error) {
 }
 
 func (pst Repository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
-	s, err := pst.db.Get(context.Background(), fmt.Sprintf("%x", key)).Bytes()
+	s, err := pst.db.Get(context.Background(), string(key)).Bytes()
 	if shouldReturnRedisError(err) {
 		return nil, err
 	}

@@ -76,7 +76,7 @@ func (pst *BlockChain) FindUnspentTransactions(address string) []txn.Transaction
 				}
 			}
 			if len(block.PrevHash) == 0 {
-				break
+				return unspentTxs
 			}
 		}
 	}
