@@ -20,16 +20,16 @@ type CommandLine struct {
 //printUsage will display what options are availble to the user
 func (cli *CommandLine) printUsageCommand() {
 	log.Println("Usage: ")
-	log.Println(" [x] getbalance -address <ADDRESS> -> get balance for ADDRESS")
 	log.Println(" [x] createblockchain -address <ADDRESS> -> creates a blockchain and rewards the mining fee")
-	log.Println(" [x] printchain -> Prints the blocks in the chain")
 	log.Println(" [x] send -from <FROM> -to <TO> -amount <AMOUNT> -> Send amount of coins from one address to another")
+	log.Println(" [x] getbalance -address <ADDRESS> -> get balance for ADDRESS")
+	log.Println(" [x] printchain -> Prints the blocks in the chain")
 }
 
 //validateArgs ensures the cli was given valid input
-func (cli *CommandLine) validateArgs() {
+func (pst *CommandLine) validateArgs() {
 	if len(os.Args) < 2 {
-		cli.printUsageCommand()
+		pst.printUsageCommand()
 		runtime.Goexit()
 	}
 }
@@ -114,11 +114,21 @@ func (pst *CommandLine) printChainCommand() {
 func (pst *CommandLine) stateMachine(args []string) {
 	switch args[3] {
 	case "getbalance":
-		log.Println("getbalance")
+		address := args[5]
+		if address == "" {
+			pst.printUsageCommand()
+			runtime.Goexit()
+		}
+		pst.getBalanceCommand(address)
 	case "createblockchain":
-		log.Println("createblockchain")
+		address := args[5]
+		if address == "" {
+			pst.printUsageCommand()
+			runtime.Goexit()
+		}
+		pst.createBlockChainCommand(address)
 	case "printchain":
-		log.Println("printchain")
+		pst.printUsageCommand()
 	case "send":
 		log.Println("send")
 	default:
