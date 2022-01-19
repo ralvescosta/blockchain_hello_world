@@ -2,28 +2,37 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "AddBlock - DebugMode",
+      "name": "Create Blockchain - DebugMode",
       "type": "go",
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}",
       "env": {
         "GO_ENV": "development",
-        "DB_PATH": "./tmp/blocks/"
       },
-      "args": ["run", ".", "add", "-block", "BLOCK"]
+      "args": ["run", ".", "createblockchain", "-address", "asdf"]
     },
     {
-      "name": "Read Blocks - DebugMode",
+      "name": "Transaction - DebugMode",
       "type": "go",
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}",
       "env": {
         "GO_ENV": "development",
-        "DB_PATH": "./tmp/blocks/"
       },
-      "args": ["run", ".", "print"]
+      "args": ["run", ".", "send", "-from", "asdf", "-to", "qwert", "-amount", "1"]
+    },
+    {
+      "name": "Get Balance - DebugMode",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}",
+      "env": {
+        "GO_ENV": "development",
+      },
+      "args": ["run", ".", "getbalance", "-address", "asdf"]
     }
   ]
 }
