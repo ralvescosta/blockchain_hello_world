@@ -97,7 +97,7 @@ func ToTransactinsModel(txs []*txn.Transaction) []TransactionModel {
 	var transactionsModel []TransactionModel
 	var inputsModel []TxInputModel
 	var outputsModel []TxOutputModel
-	for _, transaction := range transactionsModel {
+	for _, transaction := range txs {
 		for _, input := range transaction.Inputs {
 			inputsModel = append(inputsModel, TxInputModel{
 				ID:  input.ID,
