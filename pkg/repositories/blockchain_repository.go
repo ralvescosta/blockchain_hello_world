@@ -10,11 +10,11 @@ import (
 	pkgBlock "blockchain/pkg/block"
 )
 
-type Repository struct {
+type BlockchainRepository struct {
 	db *redis.Client
 }
 
-func (pst Repository) GetLastBlock() (*pkgBlock.Block, error) {
+func (pst BlockchainRepository) GetLastBlock() (*pkgBlock.Block, error) {
 	s, err := pst.db.Get(context.Background(), "last_block").Bytes()
 	if shouldReturnRedisError(err) {
 		return nil, err
@@ -30,7 +30,7 @@ func (pst Repository) GetLastBlock() (*pkgBlock.Block, error) {
 	return model.ToBlock(), nil
 }
 
-func (pst Repository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
+func (pst BlockchainRepository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
 	s, err := pst.db.Get(context.Background(), string(key)).Bytes()
 	if shouldReturnRedisError(err) {
 		return nil, err
@@ -45,7 +45,7 @@ func (pst Repository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
 	return model.ToBlock(), nil
 }
 
-func (pst Repository) GetOrCreateFirstBlock(firstBlock *pkgBlock.Block) (*pkgBlock.Block, error) {
+func (pst BlockchainRepository) GetOrCreateFirstBlock(firstBlock *pkgBlock.Block) (*pkgBlock.Block, error) {
 	s, err := pst.db.Get(context.Background(), "last_block").Bytes()
 	if shouldReturnRedisError(err) {
 		return nil, err
@@ -65,17 +65,17 @@ func (pst Repository) GetOrCreateFirstBlock(firstBlock *pkgBlock.Block) (*pkgBlo
 	return firstBlock, err
 }
 
-func (pst Repository) InsertNewBlock(block *pkgBlock.Block) (*pkgBlock.Block, error) {
+func (pst BlockchainRepository) InsertNewBlock(block *pkgBlock.Block) (*pkgBlock.Block, error) {
 	err := pst.txnCreateNewBlock(block)
 
 	return block, err
 }
 
-func (pst Repository) Dispose() {
+func (pst BlockchainRepository) Dispose() {
 	defer pst.db.Close()
 }
 
-func (pst Repository) txnCreateNewBlock(block *pkgBlock.Block) error {
+func (pst BlockchainRepository) txnCreateNewBlock(block *pkgBlock.Block) error {
 	model, err := BlockToModel(block)
 	if err != nil {
 		return err
@@ -97,8 +97,8 @@ func (pst Repository) txnCreateNewBlock(block *pkgBlock.Block) error {
 	return err
 }
 
-func NewRepository(db *redis.Client) *Repository {
-	return &Repository{db}
+func NewBlockchainRepository(db *redis.Client) *BlockchainRepository {
+	return &BlockchainRepository{db}
 }
 
 func shouldReturnRedisError(err error) bool {
