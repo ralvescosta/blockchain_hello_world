@@ -81,7 +81,7 @@ func (pst *CommandLine) sendCommand(from, to string, amount int) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Success!")
+	log.Println("Success!")
 }
 
 //printChain will display the entire contents of the blockchain
@@ -130,7 +130,14 @@ func (pst *CommandLine) stateMachine(args []string) {
 	case "printchain":
 		pst.printUsageCommand()
 	case "send":
-		log.Println("send")
+		from := args[5]
+		to := args[7]
+		amount, err := strconv.Atoi(args[9])
+		if err != nil {
+			pst.printUsageCommand()
+			runtime.Goexit()
+		}
+		pst.sendCommand(from, to, amount)
 	default:
 		pst.printUsageCommand()
 	}
