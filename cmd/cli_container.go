@@ -8,9 +8,13 @@ import (
 )
 
 type CliContainer struct {
-	dbConnection         *redis.Client
-	blockchainRepository *repositories.BlockchainRepository
-	cli                  *cli.CommandLine
+	blockchainDbConnection *redis.Client
+	blockchainRepository   *repositories.BlockchainRepository
+
+	walletDbConnection *redis.Client
+	walletRepository   *repositories.WallletRepository
+
+	cli *cli.CommandLine
 }
 
 func (pst CliContainer) Close() {
@@ -19,18 +23,29 @@ func (pst CliContainer) Close() {
 
 func NewCliContainer() CliContainer {
 
-	dbConnection := redis.NewClient(&redis.Options{
+	blockchainDbConnection := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Password: "",
+		DB:       0,
 	})
-	blockchainRepository := repositories.NewBlockchainRepository(dbConnection)
+	blockchainRepository := repositories.NewBlockchainRepository(blockchainDbConnection)
+
+	walletDbConnection := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       1,
+	})
+	walletRepository := repositories.NewWallletRepository(walletDbConnection)
 
 	cli := cli.NewCommandLine(blockchainRepository)
 
 	return CliContainer{
-		dbConnection,
+		blockchainDbConnection,
 		blockchainRepository,
+
+		walletDbConnection,
+		walletRepository,
+
 		cli,
 	}
 }
