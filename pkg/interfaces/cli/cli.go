@@ -14,7 +14,7 @@ import (
 )
 
 type CommandLine struct {
-	repository *repositories.Repository
+	blockchainRepository *repositories.BlockchainRepository
 }
 
 //printUsage will display what options are availble to the user
@@ -35,8 +35,8 @@ func (pst *CommandLine) validateArgs() {
 }
 
 func (pst *CommandLine) createBlockChainCommand(address string) {
-	chain, err := blockchain.NewBlockchain(address, pst.repository)
-	defer pst.repository.Dispose()
+	chain, err := blockchain.NewBlockchain(address, pst.blockchainRepository)
+	defer pst.blockchainRepository.Dispose()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,8 +48,8 @@ func (pst *CommandLine) createBlockChainCommand(address string) {
 }
 
 func (pst *CommandLine) getBalanceCommand(address string) {
-	chain, err := blockchain.NewBlockchain(address, pst.repository)
-	defer pst.repository.Dispose()
+	chain, err := blockchain.NewBlockchain(address, pst.blockchainRepository)
+	defer pst.blockchainRepository.Dispose()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,8 +64,8 @@ func (pst *CommandLine) getBalanceCommand(address string) {
 }
 
 func (pst *CommandLine) sendCommand(from, to string, amount int) {
-	chain, err := blockchain.NewBlockchain(from, pst.repository)
-	defer pst.repository.Dispose()
+	chain, err := blockchain.NewBlockchain(from, pst.blockchainRepository)
+	defer pst.blockchainRepository.Dispose()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -86,8 +86,8 @@ func (pst *CommandLine) sendCommand(from, to string, amount int) {
 
 //printChain will display the entire contents of the blockchain
 func (pst *CommandLine) printChainCommand() {
-	chain, err := blockchain.NewBlockchain("", pst.repository)
-	defer pst.repository.Dispose()
+	chain, err := blockchain.NewBlockchain("", pst.blockchainRepository)
+	defer pst.blockchainRepository.Dispose()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -148,6 +148,6 @@ func (pst *CommandLine) Run() {
 	pst.stateMachine(os.Args)
 }
 
-func NewCommandLine(repo *repositories.Repository) *CommandLine {
-	return &CommandLine{repo}
+func NewCommandLine(blockchainRepo *repositories.BlockchainRepository) *CommandLine {
+	return &CommandLine{blockchainRepo}
 }

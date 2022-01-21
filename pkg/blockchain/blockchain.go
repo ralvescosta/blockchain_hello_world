@@ -15,7 +15,7 @@ type Status struct {
 type BlockChain struct {
 	LastHash []byte
 	Status   Status
-	repo     *repositories.Repository
+	repo     *repositories.BlockchainRepository
 }
 
 func (pst *BlockChain) Add(transactions []*txn.Transaction) error {
@@ -120,11 +120,11 @@ Work:
 	return accumulated, unspentOuts
 }
 
-func blockchainAlreadyExist(address string, repo *repositories.Repository, lastBlock *pkgBlock.Block) (*BlockChain, error) {
+func blockchainAlreadyExist(address string, repo *repositories.BlockchainRepository, lastBlock *pkgBlock.Block) (*BlockChain, error) {
 	status := Status{Already: true}
 	return &BlockChain{lastBlock.Hash, status, repo}, nil
 }
-func createNewBlockChain(address string, repo *repositories.Repository) (*BlockChain, error) {
+func createNewBlockChain(address string, repo *repositories.BlockchainRepository) (*BlockChain, error) {
 	coinbaseTxn := txn.CoinbaseTxn(address, "First Transaction from Genesis")
 	coinbaseBlock, err := pkgBlock.NewBlock([]*txn.Transaction{coinbaseTxn}, []byte{}, 0)
 	if err != nil {
@@ -140,7 +140,7 @@ func createNewBlockChain(address string, repo *repositories.Repository) (*BlockC
 	return &BlockChain{coinbaseBlock.Hash, status, repo}, nil
 }
 
-func NewBlockchain(address string, repo *repositories.Repository) (*BlockChain, error) {
+func NewBlockchain(address string, repo *repositories.BlockchainRepository) (*BlockChain, error) {
 	block, err := repo.GetLastBlock()
 	if err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func NewBlockchain(address string, repo *repositories.Repository) (*BlockChain, 
 
 type BlockChainIterator struct {
 	CurrentHash []byte
-	repo        *repositories.Repository
+	repo        *repositories.BlockchainRepository
 }
 
 func (pst *BlockChain) Iterator() *BlockChainIterator {
