@@ -5,6 +5,7 @@ import (
 
 	"blockchain/pkg/interfaces"
 	"blockchain/pkg/presentation/cli"
+	"blockchain/pkg/presentation/controllers"
 	"blockchain/pkg/repositories"
 )
 
@@ -13,7 +14,7 @@ type CliContainer struct {
 	blockchainRepository   interfaces.IBlockchainRepository
 
 	walletDbConnection *redis.Client
-	walletRepository   *repositories.WallletRepository
+	walletRepository   interfaces.IWalletRepository
 
 	cli *cli.CommandLine
 }
@@ -38,7 +39,18 @@ func NewCliContainer() CliContainer {
 	})
 	walletRepository := repositories.NewWallletRepository(walletDbConnection)
 
-	cli := cli.NewCommandLine(blockchainRepository)
+	createBlockchainController := controllers.NewCreateBlockchainController(blockchainRepository)
+	getBalanceController := controllers.NewGetBalanceController(blockchainRepository)
+	printChainController := controllers.NewPrintChainController(blockchainRepository)
+	printUsageController := controllers.NewPrintUsageController()
+	sendControler := controllers.NewSendController(blockchainRepository)
+	cli := cli.NewCommandLine(
+		createBlockchainController,
+		getBalanceController,
+		printChainController,
+		printUsageController,
+		sendControler,
+	)
 
 	return CliContainer{
 		blockchainDbConnection,
