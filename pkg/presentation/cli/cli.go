@@ -14,6 +14,8 @@ type CommandLine struct {
 	printChainController       controllers.PrintChainController
 	printUsageController       controllers.PrintUsageController
 	sendController             controllers.SendController
+	createWalletController     controllers.CreateWalletController
+	listAddressesController    controllers.ListAddressesController
 }
 
 func (pst *CommandLine) Exit() {
@@ -52,6 +54,10 @@ func (pst *CommandLine) stateMachine(args []string) {
 			pst.Exit()
 		}
 		pst.sendController.Send(from, to, amount)
+	case "createwallet":
+		pst.createWalletController.Create()
+	case "listaddresses":
+		pst.listAddressesController.List()
 	default:
 		pst.printUsageController.Print()
 	}
@@ -68,6 +74,8 @@ func NewCommandLine(
 	printChainController controllers.PrintChainController,
 	printUsageController controllers.PrintUsageController,
 	sendController controllers.SendController,
+	createWalletController controllers.CreateWalletController,
+	listAddressesController controllers.ListAddressesController,
 ) *CommandLine {
 	return &CommandLine{
 		createBlockchainController,
@@ -75,5 +83,7 @@ func NewCommandLine(
 		printChainController,
 		printUsageController,
 		sendController,
+		createWalletController,
+		listAddressesController,
 	}
 }

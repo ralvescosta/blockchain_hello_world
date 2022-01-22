@@ -44,12 +44,17 @@ func NewCliContainer() CliContainer {
 	printChainController := controllers.NewPrintChainController(blockchainRepository)
 	printUsageController := controllers.NewPrintUsageController()
 	sendControler := controllers.NewSendController(blockchainRepository)
+	createWalletController := controllers.NewCreateWalletController(walletRepository)
+	listAddresseesController := controllers.NewListAddressesController(walletRepository)
+
 	cli := cli.NewCommandLine(
 		createBlockchainController,
 		getBalanceController,
 		printChainController,
 		printUsageController,
 		sendControler,
+		createWalletController,
+		listAddresseesController,
 	)
 
 	return CliContainer{

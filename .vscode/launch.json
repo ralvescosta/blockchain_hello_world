@@ -33,6 +33,28 @@
         "GO_ENV": "development",
       },
       "args": ["run", ".", "getbalance", "-address", "asdf"]
+    },
+    {
+      "name": "Create Wallet - DebugMode",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}",
+      "env": {
+        "GO_ENV": "development",
+      },
+      "args": ["run", ".", "createwallet"]
+    },
+    {
+      "name": "List Addresses - DebugMode",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}",
+      "env": {
+        "GO_ENV": "development",
+      },
+      "args": ["run", ".", "listaddresses"]
     }
   ]
 }
