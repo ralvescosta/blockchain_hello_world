@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -127,12 +128,25 @@ func ToTransactinsModel(txs []*txn.Transaction) []TransactionModel {
 	return transactionsModel
 }
 
-type WalletModel struct{}
+type WalletModel struct {
+	PrivateKey ecdsa.PrivateKey `json:"private_key"`
+	PublicKey  []byte           `json:"public_key"`
+}
 
-func (WalletModel) ToWallet() *wallet.Wallet {
-	return &wallet.Wallet{}
+func (pst WalletModel) MarshalBinary() ([]byte, error) {
+	return json.Marshal(pst)
+}
+
+func (pst WalletModel) ToWallet() *wallet.Wallet {
+	return &wallet.Wallet{
+		PublicKey:  pst.PublicKey,
+		PrivateKey: pst.PrivateKey,
+	}
 }
 
 func ToWalletModel(wlt wallet.Wallet) WalletModel {
-	return WalletModel{}
+	return WalletModel{
+		PublicKey:  wlt.PublicKey,
+		PrivateKey: wlt.PrivateKey,
+	}
 }
