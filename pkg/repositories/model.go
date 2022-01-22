@@ -7,6 +7,7 @@ import (
 
 	pkgBlock "blockchain/pkg/block"
 	txn "blockchain/pkg/transaction"
+	"blockchain/pkg/wallet"
 )
 
 type BlockModel struct {
@@ -124,4 +125,14 @@ func ToTransactinsModel(txs []*txn.Transaction) []TransactionModel {
 	}
 
 	return transactionsModel
+}
+
+type WalletModel struct{}
+
+func (WalletModel) ToWallet() *wallet.Wallet {
+	return &wallet.Wallet{}
+}
+
+func ToWalletModel(wlt wallet.Wallet) WalletModel {
+	return WalletModel{}
 }
