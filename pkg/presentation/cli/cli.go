@@ -9,12 +9,12 @@ import (
 
 	pkgBlock "blockchain/pkg/block"
 	"blockchain/pkg/blockchain"
-	"blockchain/pkg/repositories"
+	"blockchain/pkg/interfaces"
 	txn "blockchain/pkg/transaction"
 )
 
 type CommandLine struct {
-	blockchainRepository *repositories.BlockchainRepository
+	blockchainRepository interfaces.IBlockchainRepository
 }
 
 //printUsage will display what options are availble to the user
@@ -148,6 +148,6 @@ func (pst *CommandLine) Run() {
 	pst.stateMachine(os.Args)
 }
 
-func NewCommandLine(blockchainRepo *repositories.BlockchainRepository) *CommandLine {
+func NewCommandLine(blockchainRepo interfaces.IBlockchainRepository) *CommandLine {
 	return &CommandLine{blockchainRepo}
 }
