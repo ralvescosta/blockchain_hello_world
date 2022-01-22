@@ -20,7 +20,9 @@ func (pst wallletRepository) GetAllWallets() (*wallet.Wallets, error) {
 		return nil, err
 	}
 
-	wallets := wallet.Wallets{}
+	wallets := wallet.Wallets{
+		Wallets: make(map[string]*wallet.Wallet),
+	}
 	for _, key := range keys {
 		s, err := pst.db.Get(ctx, key).Bytes()
 		if err != nil {
