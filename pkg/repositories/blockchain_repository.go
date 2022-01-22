@@ -8,13 +8,14 @@ import (
 	"github.com/go-redis/redis/v8"
 
 	pkgBlock "blockchain/pkg/block"
+	"blockchain/pkg/interfaces"
 )
 
-type BlockchainRepository struct {
+type blockchainRepository struct {
 	db *redis.Client
 }
 
-func (pst BlockchainRepository) GetLastBlock() (*pkgBlock.Block, error) {
+func (pst blockchainRepository) GetLastBlock() (*pkgBlock.Block, error) {
 	s, err := pst.db.Get(context.Background(), "last_block").Bytes()
 	if shouldReturnRedisError(err) {
 		return nil, err
@@ -30,7 +31,7 @@ func (pst BlockchainRepository) GetLastBlock() (*pkgBlock.Block, error) {
 	return model.ToBlock(), nil
 }
 
-func (pst BlockchainRepository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
+func (pst blockchainRepository) GetBlockByKey(key []byte) (*pkgBlock.Block, error) {
 	s, err := pst.db.Get(context.Background(), string(key)).Bytes()
 	if shouldReturnRedisError(err) {
 		return nil, err
@@ -45,7 +46,7 @@ func (pst BlockchainRepository) GetBlockByKey(key []byte) (*pkgBlock.Block, erro
 	return model.ToBlock(), nil
 }
 
-func (pst BlockchainRepository) GetOrCreateFirstBlock(firstBlock *pkgBlock.Block) (*pkgBlock.Block, error) {
+func (pst blockchainRepository) GetOrCreateFirstBlock(firstBlock *pkgBlock.Block) (*pkgBlock.Block, error) {
 	s, err := pst.db.Get(context.Background(), "last_block").Bytes()
 	if shouldReturnRedisError(err) {
 		return nil, err
@@ -65,17 +66,17 @@ func (pst BlockchainRepository) GetOrCreateFirstBlock(firstBlock *pkgBlock.Block
 	return firstBlock, err
 }
 
-func (pst BlockchainRepository) InsertNewBlock(block *pkgBlock.Block) (*pkgBlock.Block, error) {
+func (pst blockchainRepository) InsertNewBlock(block *pkgBlock.Block) (*pkgBlock.Block, error) {
 	err := pst.txnCreateNewBlock(block)
 
 	return block, err
 }
 
-func (pst BlockchainRepository) Dispose() {
+func (pst blockchainRepository) Dispose() {
 	defer pst.db.Close()
 }
 
-func (pst BlockchainRepository) txnCreateNewBlock(block *pkgBlock.Block) error {
+func (pst blockchainRepository) txnCreateNewBlock(block *pkgBlock.Block) error {
 	model, err := BlockToModel(block)
 	if err != nil {
 		return err
@@ -97,8 +98,8 @@ func (pst BlockchainRepository) txnCreateNewBlock(block *pkgBlock.Block) error {
 	return err
 }
 
-func NewBlockchainRepository(db *redis.Client) *BlockchainRepository {
-	return &BlockchainRepository{db}
+func NewBlockchainRepository(db *redis.Client) interfaces.IBlockchainRepository {
+	return &blockchainRepository{db}
 }
 
 func shouldReturnRedisError(err error) bool {

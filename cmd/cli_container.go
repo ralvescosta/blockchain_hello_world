@@ -3,13 +3,14 @@ package cmd
 import (
 	"github.com/go-redis/redis/v8"
 
-	"blockchain/pkg/interfaces/cli"
+	"blockchain/pkg/interfaces"
+	"blockchain/pkg/presentation/cli"
 	"blockchain/pkg/repositories"
 )
 
 type CliContainer struct {
 	blockchainDbConnection *redis.Client
-	blockchainRepository   *repositories.BlockchainRepository
+	blockchainRepository   interfaces.IBlockchainRepository
 
 	walletDbConnection *redis.Client
 	walletRepository   *repositories.WallletRepository
