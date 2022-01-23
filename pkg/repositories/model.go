@@ -1,7 +1,9 @@
 package repositories
 
 import (
+	"bytes"
 	"crypto/ecdsa"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -129,8 +131,8 @@ func ToTransactinsModel(txs []*txn.Transaction) []TransactionModel {
 }
 
 type WalletModel struct {
-	PrivateKey ecdsa.PrivateKey `json:"private_key"`
-	PublicKey  []byte           `json:"public_key"`
+	PrivateKey []byte `json:"private_key"`
+	PublicKey  []byte `json:"public_key"`
 }
 
 func (pst WalletModel) MarshalBinary() ([]byte, error) {
@@ -138,15 +140,23 @@ func (pst WalletModel) MarshalBinary() ([]byte, error) {
 }
 
 func (pst WalletModel) ToWallet() *wallet.Wallet {
+	var privKey ecdsa.PrivateKey
+	decoder := gob.NewDecoder(bytes.NewReader(pst.PrivateKey))
+	decoder.Decode(&privKey)
+
 	return &wallet.Wallet{
 		PublicKey:  pst.PublicKey,
-		PrivateKey: pst.PrivateKey,
+		PrivateKey: privKey,
 	}
 }
 
 func ToWalletModel(wlt wallet.Wallet) WalletModel {
+	var privKey bytes.Buffer
+	encoder := gob.NewEncoder(&privKey)
+	encoder.Encode(wlt.PrivateKey)
+
 	return WalletModel{
 		PublicKey:  wlt.PublicKey,
-		PrivateKey: wlt.PrivateKey,
+		PrivateKey: privKey.Bytes(),
 	}
 }
