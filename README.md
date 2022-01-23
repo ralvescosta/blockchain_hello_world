@@ -8,7 +8,7 @@ To build this project, I've following this [series of article](https://dev.to/nh
   - A simples Blockchain with some functionalities
     - Insert a block into a chain
     - Do a transaction
-    - Use redis to persist the blockchain and the wallet
+    - Use redis to persist the blockchain and wallet
 
   - A simple Proof of Work algorithm
   - A simple wallet
